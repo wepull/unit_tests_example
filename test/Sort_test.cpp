@@ -6,58 +6,85 @@
 // ********RoostGPT********
 #include <gtest/gtest.h>
 #include <vector>
-#include <algorithm>
-#include <random>
-#include <limits>
+#include "include/SortSearch.hpp"
 #include <assert.h>
-#include "SortSearch.hpp" // Ensure this path is correct for your project structure
+#include <limits>
+#include <random>
 
-// Test suite for Sort::sortVector
-class SortVectorTest : public ::testing::Test {
+// The test suite for the Sort class
+class SortTest : public ::testing::Test {
 protected:
-  Sort sorter; // Sort class instance to be used across tests
+  Sort sorter; // Test fixture for Sort class
 
-  // Utility function to check if the vector is sorted in increasing order
-  bool isSorted(const std::vector<int>& vec) {
-    return std::is_sorted(vec.begin(), vec.end());
+  // Pre-test setup can go here
+  void SetUp() override {
+    // No setup required for this test as of now
+  }
+
+  // Post-test cleanup can go here
+  void TearDown() override {
+    // No teardown required for this test as of now
   }
 };
 
-TEST_F(SortVectorTest, SortsRandomVector) {
-  std::vector<int> vec(10);
+// Test for empty vector
+TEST_F(SortTest, EmptyVector) {
+  std::vector<int> v;
+  ASSERT_THROW(sorter.sortVector(v), std::exception);
+}
+
+// Test for single element vector
+TEST_F(SortTest, SingleElementVector) {
+  std::vector<int> v = {1};
+  sorter.sortVector(v);
+  EXPECT_EQ(v, std::vector<int>({1}));
+}
+
+// Test for already sorted vector
+TEST_F(SortTest, AlreadySortedVector) {
+  std::vector<int> v = {1, 2, 3, 4, 5};
+  sorter.sortVector(v);
+  EXPECT_EQ(v, std::vector<int>({1, 2, 3, 4, 5}));
+}
+
+// Test for reverse sorted vector
+TEST_F(SortTest, ReverseSortedVector) {
+  std::vector<int> v = {5, 4, 3, 2, 1};
+  sorter.sortVector(v);
+  EXPECT_EQ(v, std::vector<int>({1, 2, 3, 4, 5}));
+}
+
+// Test for random elements vector
+TEST_F(SortTest, RandomElementsVector) {
+  // Creating a vector filled with random elements
+  std::vector<int> v(10);
   std::random_device rd;
   std::mt19937 gen(rd());
-  std::uniform_int_distribution<> distrib(std::numeric_limits<int>::min(), std::numeric_limits<int>::max());
-  std::generate(vec.begin(), vec.end(), [&] { return distrib(gen); });
+  std::uniform_int_distribution<int> dis(std::numeric_limits<int>::min(), std::numeric_limits<int>::max());
   
-  sorter.sortVector(vec);
-  EXPECT_TRUE(isSorted(vec));
+  for (int& x : v) {
+    x = dis(gen);
+  }
+  
+  // Copying the original random vector for comparison after sorting
+  std::vector<int> original_v = v;
+  std::sort(original_v.begin(), original_v.end());
+  
+  // Using 'sortVector' to sort the vector
+  sorter.sortVector(v);
+
+  // The vector 'v' should be equal to the sorted 'original_v'
+  EXPECT_EQ(v, original_v);
 }
 
-TEST_F(SortVectorTest, SortsAlreadySortedVector) {
-  std::vector<int> vec{1, 2, 3, 4, 5};
-  sorter.sortVector(vec);
-  EXPECT_TRUE(isSorted(vec));
+// Test for vector with duplicates
+TEST_F(SortTest, VectorWithDuplicates) {
+  std::vector<int> v = {4, 1, 2, 2, 3, 3};
+  sorter.sortVector(v);
+  EXPECT_EQ(v, std::vector<int>({1, 2, 2, 3, 3, 4}));
 }
 
-TEST_F(SortVectorTest, SortsVectorWithIdenticalElements) {
-  std::vector<int> vec(10, 42); // Vector with 10 identical elements
-  sorter.sortVector(vec);
-  EXPECT_TRUE(isSorted(vec));
-}
-
-TEST_F(SortVectorTest, SortsSingleElementVector) {
-  std::vector<int> vec{42};
-  sorter.sortVector(vec);
-  EXPECT_TRUE(isSorted(vec));
-}
-
-TEST_F(SortVectorTest, AssertsOnEmptyVector) {
-  std::vector<int> vec;
-  EXPECT_DEATH(sorter.sortVector(vec), "");
-}
-
-// Main function
+// Main function to run all tests
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

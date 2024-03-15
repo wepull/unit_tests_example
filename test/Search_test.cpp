@@ -5,33 +5,69 @@
 
 // ********RoostGPT********
 #include <gtest/gtest.h>
-#include <vector>
-#include "SortSearch.hpp" // Include the header file where the Search class is defined
-#include <assert.h>
 #include <limits>
 #include <random>
+#include <vector>
+#include <assert.h>
+#include "include/SortSearch.hpp"
 
-// Test suite for Search class
-class SearchTest : public ::testing::Test {
+class SearchTestSuite : public ::testing::Test {
 protected:
-  Search search_instance; // Instance of Search to be used in tests
+    Search search;
 
-  // You can add any additional setup and teardown operations if necessary
-  void SetUp() override {
-    // Code to set up the test environment, if any
-  }
-
-  void TearDown() override {
-    // Code to clean up the test environment, if any
-  }
+    std::vector<int> generate_sorted_vector(size_t size) {
+        std::vector<int> vec(size);
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_int_distribution<> dis(1, std::numeric_limits<int>::max());
+        for (size_t i = 0; i < size; ++i) {
+            vec[i] = dis(gen);
+        }
+        std::sort(vec.begin(), vec.end());
+        return vec;
+    }
 };
 
-// Now we start writing the actual test cases inside our test suite
-// ...
+TEST_F(SearchTestSuite, BinarySearchFound) {
+    std::vector<int> vec = generate_sorted_vector(1000);
+    int search_value = vec[500]; // middle value
+    ASSERT_EQ(search.binary_search(vec, search_value), 500);
+}
 
-// The main function for running the tests
+TEST_F(SearchTestSuite, BinarySearchNotFound) {
+    std::vector<int> vec = generate_sorted_vector(1000);
+    ASSERT_EQ(search.binary_search(vec, std::numeric_limits<int>::max()), -1);
+}
+
+TEST_F(SearchTestSuite, BinarySearchEmptyVector) {
+    std::vector<int> vec;
+    ASSERT_THROW(search.binary_search(vec, 42), std::exception);
+}
+
+TEST_F(SearchTestSuite, BinarySearchSingleElementFound) {
+    std::vector<int> vec = {42};
+    ASSERT_EQ(search.binary_search(vec, 42), 0);
+}
+
+TEST_F(SearchTestSuite, BinarySearchSingleElementNotFound) {
+    std::vector<int> vec = {84};
+    ASSERT_EQ(search.binary_search(vec, 42), -1);
+}
+
+TEST_F(SearchTestSuite, BinarySearchFirstElement) {
+    std::vector<int> vec = generate_sorted_vector(1000);
+    int search_value = vec.front();
+    ASSERT_EQ(search.binary_search(vec, search_value), 0);
+}
+
+TEST_F(SearchTestSuite, BinarySearchLastElement) {
+    std::vector<int> vec = generate_sorted_vector(1000);
+    int search_value = vec.back();
+    ASSERT_EQ(search.binary_search(vec, search_value), vec.size() - 1);
+}
+
 int main(int argc, char **argv) {
-  ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }
 

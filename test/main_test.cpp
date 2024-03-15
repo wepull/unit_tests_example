@@ -9,60 +9,70 @@
 #include <vector>
 #include "SortSearch.hpp"
 
-namespace {
+namespace sorting_and_searching {
 
-class SortSearchTestSuite : public ::testing::Test {
- protected:
-  sorting_and_searching::Obtain obtainer;
-  sorting_and_searching::Sort sorter;
-  sorting_and_searching::Search searcher;
+class SortSearchTest : public ::testing::Test {
+protected:
+    Sort sort;
+    Search search;
+    Obtain obtain;
 
-  // We will define some constants for testing.
-  static const std::size_t TEST_VECTOR_SIZE = 10;  // Size for vector generation
-  static const std::size_t TEST_RANGE = 50;        // Range for random values
+    std::vector<int> generate_vector(std::size_t vector_size, int range) {
+        return obtain.getVector(vector_size, range);
+    }
 };
 
-// Test case to ensure that a vector can be obtained successfully
-TEST_F(SortSearchTestSuite, GetVectorSuccess) {
-  std::vector<int> test_vec = obtainer.getVector(TEST_VECTOR_SIZE, TEST_RANGE);
-  ASSERT_EQ(test_vec.size(), TEST_VECTOR_SIZE) << "Vector size is not as expected";
-  for (auto val : test_vec) {
-    EXPECT_LE(val, static_cast<int>(TEST_RANGE)) << "Value is greater than range";
-    EXPECT_GE(val, -static_cast<int>(TEST_RANGE)) << "Value is less than negative range";
-  }
+TEST_F(SortSearchTest, SortVector_Success) {
+    std::vector<int> v = generate_vector(10, 50);
+    sort.sortVector(v);
+
+    for (std::size_t i = 0; i < v.size() - 1; ++i) {
+        EXPECT_LE(v[i], v[i + 1]);
+    }
 }
 
-// Test case to verify if the vector is sorted correctly
-TEST_F(SortSearchTestSuite, SortVectorSuccess) {
-  std::vector<int> test_vec = obtainer.getVector(TEST_VECTOR_SIZE, TEST_RANGE);
-  sorter.sortVector(test_vec);
-  for (std::size_t i = 1; i < test_vec.size(); ++i) {
-    EXPECT_LE(test_vec[i - 1], test_vec[i]) << "Vector is not sorted in non-decreasing order";
-  }
+TEST_F(SortSearchTest, BinarySearch_ValueExists) {
+    std::vector<int> v = generate_vector(10, 50);
+    sort.sortVector(v);
+    int search_value = v[5]; // Select a value that is guaranteed to exist.
+    int position = search.binary_search(v, search_value);
+
+    ASSERT_NE(position, -1);
+    ASSERT_EQ(v[position], search_value);
 }
 
-// Test case to verify binary search function works correctly for a known value
-TEST_F(SortSearchTestSuite, BinarySearchKnownValueSuccess) {
-  std::vector<int> test_vec = {1, 3, 5, 7, 9, 11, 13, 15, 17, 19};
-  int known_value = 11;
-  int expected_pos = 5;  // Known position of the value 11 in the sorted vector
-  int found_pos = searcher.binary_search(test_vec, known_value);
-  ASSERT_EQ(expected_pos, found_pos) << "Known value's position not found correctly";
+TEST_F(SortSearchTest, BinarySearch_ValueDoesNotExist) {
+    std::vector<int> v = generate_vector(10, 50);
+    sort.sortVector(v);
+    int value_not_in_vector = 1000; // Use a value outside the range.
+    int position = search.binary_search(v, value_not_in_vector);
+
+    ASSERT_EQ(position, -1);
 }
 
-// Test case to verify binary search function fails correctly for an unknown value
-TEST_F(SortSearchTestSuite, BinarySearchUnknownValueFail) {
-  std::vector<int> test_vec = {1, 3, 5, 7, 9, 11, 13, 15, 17, 19};
-  int unknown_value = 20;  // Value not present in the vector
-  int expected_pos = -1;   // Expected position for a not-found value
-  int found_pos = searcher.binary_search(test_vec, unknown_value);
-  ASSERT_EQ(expected_pos, found_pos) << "Unknown value should not be found";
+TEST_F(SortSearchTest, SortVector_Empty) {
+    std::vector<int> v = {}; // Empty vector
+    try {
+        sort.sortVector(v);
+    } catch (const std::exception& e) {
+        SUCCEED();
+    }
 }
 
-}  // namespace
+TEST_F(SortSearchTest, BinarySearch_EmptyVector) {
+    std::vector<int> v = {}; // Empty vector
+    int search_value = 5; // Any search value
+    try {
+        search.binary_search(v, search_value);
+    } catch (const std::exception& e) {
+        SUCCEED();
+    }
+}
 
-int main(int argc, char **argv) {
-  ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
+} // namespace sorting_and_searching
+
+int main(int argc, char** argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }
 

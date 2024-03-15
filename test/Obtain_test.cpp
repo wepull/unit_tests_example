@@ -8,14 +8,79 @@
 #include <assert.h>
 #include <limits>
 #include <random>
-// Include the SortSearch.hpp header which contains the Obtain class.
-#include "include/SortSearch.hpp"
+#include <vector>
+#include "SortSearch.hpp" // Assuming SortSearch.hpp is in the include directory
 
-// Main function to run all the tests.
+class ObtainTest : public ::testing::Test {
+protected:
+  void SetUp() override {
+    // Setup code if needed
+  }
+
+  void TearDown() override {
+    // Cleanup code if needed
+  }
+};
+
+// Test case to check if the getVector function returns a vector of correct size
+TEST_F(ObtainTest, CorrectSize) {
+  Obtain obtain;
+  std::size_t size = 5;
+  std::size_t range = 10;
+  auto vec = obtain.getVector(size, range);
+  ASSERT_EQ(size, vec.size());
+}
+
+// Test case to check if the getVector function returns a vector within the specified range
+TEST_F(ObtainTest, ValuesWithinRange) {
+  Obtain obtain;
+  std::size_t size = 5;
+  std::size_t range = 10;
+  bool withinRange = true;
+  auto vec = obtain.getVector(size, range);
+  for (const auto& value : vec) {
+    if (value < -range || value > range) {
+      withinRange = false;
+      break;
+    }
+  }
+  ASSERT_TRUE(withinRange);
+}
+
+// Test case to check the behavior with zero size
+TEST_F(ObtainTest, ZeroSize) {
+  Obtain obtain;
+  std::size_t size = 0;
+  std::size_t range = 10;
+  EXPECT_THROW(obtain.getVector(size, range), std::exception);
+}
+
+// Test case to check the behavior with zero range
+TEST_F(ObtainTest, ZeroRange) {
+  Obtain obtain;
+  std::size_t size = 5;
+  std::size_t range = 0;
+  EXPECT_THROW(obtain.getVector(size, range), std::exception);
+}
+
+// Test case to check the behavior with sizes larger than int max
+TEST_F(ObtainTest, OversizedVector) {
+  Obtain obtain;
+  std::size_t size = static_cast<std::size_t>(std::numeric_limits<int>::max()) + 1;
+  std::size_t range = 10;
+  EXPECT_THROW(obtain.getVector(size, range), std::exception);
+}
+
+// Test case to check for values outside int range
+TEST_F(ObtainTest, ValueExceedingIntMax) {
+  Obtain obtain;
+  std::size_t size = 5;
+  std::size_t range = static_cast<std::size_t>(std::numeric_limits<int>::max()) + 1;
+  EXPECT_THROW(obtain.getVector(size, range), std::exception);
+}
+
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
-  // Remove all recognized flags.
-  // Note: This step may not be necessary if we are not directly handling command line flags.
   return RUN_ALL_TESTS();
 }
 
