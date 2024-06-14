@@ -4,72 +4,64 @@
 
 
 // ********RoostGPT********
-#include "include/SortSearch.hpp"
 #include <gtest/gtest.h>
-#include <assert.h>
+#include <vector>
 #include <limits>
+#include <assert.h>
 #include <random>
+#include "include/SortSearch.hpp"
 
 class SearchTestSuite : public ::testing::Test {
 protected:
-    // Test suite setup can be done here
-    SearchTestSuite() {
-        // Initialization or setup if needed
-    }
+  std::vector<int> vec;
+  sorting_and_searching::Search search_algo;
 
-    // Code here will be called immediately after the constructor (right before each test).
-    void SetUp() override {
-        // Preparation before each test
-    }
-
-    // Code here will be called immediately after each test (right before the destructor).
-    void TearDown() override {
-        // Cleanup after each test
-    }
-
-    // Test suite teardown can be done here
-    ~SearchTestSuite() override {
-        // Cleanup if needed
-    }
-
-    // Members available to all tests here
-    Search search_instance;
+  void SetUp() override {
+    vec = {1, 3, 5, 7, 9, 11, 13, 15};
+  }
 };
 
-TEST_F(SearchTestSuite, TestBinarySearch_ValueFound) {
-    std::vector<int> input_vector = {1, 3, 5, 7, 9};
-    int search_value = 5;
-    int expected_position = 2;
-    ASSERT_EQ(search_instance.binary_search(input_vector, search_value), expected_position);
+// Test case 1: Search for an existing number in the vector
+TEST_F(SearchTestSuite, FindExistingNumber) {
+  int result = search_algo.binary_search(vec, 5);
+  ASSERT_EQ(result, 2); // 5 is at index 2
 }
 
-TEST_F(SearchTestSuite, TestBinarySearch_ValueNotFound) {
-    std::vector<int> input_vector = {1, 3, 5, 7, 9};
-    int search_value = 4;
-    int expected_position = -1;
-    ASSERT_EQ(search_instance.binary_search(input_vector, search_value), expected_position);
+// Test case 2: Search for a number not existing in the vector
+TEST_F(SearchTestSuite, FindNonExistingNumber) {
+  int result = search_algo.binary_search(vec, 4);
+  ASSERT_EQ(result, -1); // 4 is not in the vector, expect -1
 }
 
-TEST_F(SearchTestSuite, TestBinarySearch_EmptyVector) {
-    std::vector<int> input_vector = {};
-    int search_value = 1;
-    
-    // Since the assertion in the binary_search function requires at least 1 element,
-    // we are expecting an assertion failure.
-    // To test this, we need to catch the assertion thrown during unit tests.
-    ASSERT_DEATH(search_instance.binary_search(input_vector, search_value), "");
+// Test case 3: Search with empty vector
+TEST_F(SearchTestSuite, SearchInEmptyVector) {
+  std::vector<int> empty_vec;
+  int result = search_algo.binary_search(empty_vec, 1);
+  ASSERT_EQ(result, -1); // Searching in an empty vector, expect -1
 }
 
-TEST_F(SearchTestSuite, TestBinarySearch_LargeNumbers) {
-    std::vector<int> input_vector = {std::numeric_limits<int>::max() - 2, std::numeric_limits<int>::max() - 1};
-    int search_value = std::numeric_limits<int>::max() - 1;
-    int expected_position = 1;
-    ASSERT_EQ(search_instance.binary_search(input_vector, search_value), expected_position);
+// Test case 4: Search with vector having maximum integer
+TEST_F(SearchTestSuite, SearchMaxIntEdgeCase) {
+  vec.push_back(std::numeric_limits<int>::max());
+  int result = search_algo.binary_search(vec, std::numeric_limits<int>::max());
+  ASSERT_EQ(result, vec.size() - 1); // Max int is the last element
 }
 
+// Test case 5: Search for the minimum number in the vector
+TEST_F(SearchTestSuite, FindMinimumNumber) {
+  int result = search_algo.binary_search(vec, vec.front());
+  ASSERT_EQ(result, 0); // Minimum is at index 0
+}
+
+// Test case 6: Search for the maximum number in the vector
+TEST_F(SearchTestSuite, FindMaximumNumber) {
+  int result = search_algo.binary_search(vec, vec.back());
+  ASSERT_EQ(result, vec.size() - 1); // Maximum is at the last index
+}
+
+// Main function to run all tests
 int main(int argc, char **argv) {
-    ::testing::InitGoogleTest(&argc, argv);
-    // Parse command line for GoogleTest flags, and remove all recognized flags.
-    return RUN_ALL_TESTS();
+  ::testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
 }
 

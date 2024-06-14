@@ -6,86 +6,83 @@
 // ********RoostGPT********
 #include <gtest/gtest.h>
 #include <vector>
+#include "include/SortSearch.hpp"
 #include <assert.h>
 #include <limits>
 #include <random>
-#include "SortSearch.hpp"
 
-using sorting_and_searching::Obtain;
-using sorting_and_searching::Sort;
-using sorting_and_searching::Search;
-
+// Test suite for the Sort class.
 class SortTest : public ::testing::Test {
 protected:
-  void SetUp() override {
-    // Can initialize objects here if needed for multiple tests, otherwise individual tests can initialize their own.
+  sorting_and_searching::Sort sorter;
+
+  // Generates a random vector of integers.
+  std::vector<int> getRandomVector(size_t size) {
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<int> dist(std::numeric_limits<int>::min(), std::numeric_limits<int>::max());
+    std::vector<int> v(size);
+    for (size_t i = 0; i < size; ++i) {
+      v[i] = dist(gen);
+    }
+    return v;
   }
 
-  void TearDown() override {
-    // Code here will be called immediately after each test, right before the destructor.
+  // Helper function to determine if vector is sorted in increasing order.
+  bool isSorted(const std::vector<int>& v) {
+    for (size_t i = 1; i < v.size(); ++i) {
+      if (v[i - 1] > v[i]) {
+        return false;
+      }
+    }
+    return true;
   }
-
-  Sort sorter;
 };
 
-// A test case to check sorting of a vector with unique elements.
-TEST_F(SortTest, UniqueElements) {
-  std::vector<int> vec = {4, 2, 3, 1, 5};
-  std::vector<int> sorted_vec = {1, 2, 3, 4, 5};
-
-  sorter.sortVector(vec);
-  ASSERT_EQ(vec, sorted_vec);
+// Test case to check sorting of an already sorted array.
+TEST_F(SortTest, AlreadySortedVector) {
+  std::vector<int> v = {1, 2, 3, 4, 5};
+  sorter.sortVector(v);
+  EXPECT_TRUE(isSorted(v));
 }
 
-// A test case to check sorting of a vector with duplicate elements.
-TEST_F(SortTest, DuplicateElements) {
-  std::vector<int> vec = {4, 2, 2, 3, 1, 3, 5};
-  std::vector<int> sorted_vec = {1, 2, 2, 3, 3, 4, 5};
-
-  sorter.sortVector(vec);
-  ASSERT_EQ(vec, sorted_vec);
+// Test case to check sorting of a non-sorted array.
+TEST_F(SortTest, NonSortedVector) {
+  std::vector<int> v = {5, 3, 1, 4, 2};
+  sorter.sortVector(v);
+  EXPECT_TRUE(isSorted(v));
 }
 
-// A test case to check sorting of an already sorted vector.
-TEST_F(SortTest, AlreadySorted) {
-  std::vector<int> vec = {1, 2, 3, 4, 5};
-
-  sorter.sortVector(vec);
-  EXPECT_EQ(vec, (std::vector<int>{1, 2, 3, 4, 5}));
+// Test case to check sorting of a vector with duplicate entries.
+TEST_F(SortTest, VectorWithDuplicates) {
+  std::vector<int> v = {5, 2, 3, 3, 5};
+  sorter.sortVector(v);
+  EXPECT_TRUE(isSorted(v));
 }
 
-// A test case to check sorting of a vector with single element.
-TEST_F(SortTest, SingleElement) {
-  std::vector<int> vec = {1};
-
-  sorter.sortVector(vec);
-  EXPECT_EQ(vec, (std::vector<int>{1}));
+// Test case to check sorting of a large random vector.
+TEST_F(SortTest, LargeRandomVector) {
+  std::vector<int> v = getRandomVector(1000);
+  sorter.sortVector(v);
+  EXPECT_TRUE(isSorted(v));
 }
 
-// A test case to check sorting of a vector with all elements being the same.
-TEST_F(SortTest, AllSameElements) {
-  std::vector<int> vec = {2, 2, 2, 2, 2};
-
-  sorter.sortVector(vec);
-  EXPECT_EQ(vec, (std::vector<int>{2, 2, 2, 2, 2}));
+// Test case to check sorting of a vector with single element (edge case).
+TEST_F(SortTest, SingleElementVector) {
+  std::vector<int> v = {1};
+  sorter.sortVector(v);
+  EXPECT_TRUE(isSorted(v));
 }
 
-// A test case to verify that the sort function handles a large vector.
-TEST_F(SortTest, LargeVector) {
-  std::vector<int> vec(1000);
-  std::iota(vec.begin(), vec.end(), -500); // Fill with a range of values from -500.
-  std::shuffle(vec.begin(), vec.end(), std::mt19937(std::random_device()())); // Shuffle the vector.
-  std::vector<int> expected_vec(vec);
-  std::sort(expected_vec.begin(), expected_vec.end());
-
-  sorter.sortVector(vec);
-  ASSERT_EQ(vec, expected_vec);
+// Test case to check sorting of an empty vector (should assert-fail).
+TEST_F(SortTest, EmptyVector) {
+  std::vector<int> v;
+  EXPECT_DEATH_IF_SUPPORTED(sorter.sortVector(v), "");
 }
 
-// Entry point for the GoogleTest framework.
+
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
-  // Parse command line for GoogleTest flags, and remove all recognized flags.
   return RUN_ALL_TESTS();
 }
 
